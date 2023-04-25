@@ -1,7 +1,7 @@
 const cors = require('cors')
 const express = require('express')
 const app = express()
-const {faker} = require('@faker-js/faker');
+const { faker } = require('@faker-js/faker');
 
 const ItemModel = require('./models/item.model')
 const CouponModel = require('./models/coupons.model')
@@ -35,8 +35,34 @@ app.post('/api/item', async (req, res) => {
 // customer routes
 
 app.get('/api/customer', async (req, res) => {
-    let customers = await CustomerModel.find()
-    res.send(customers)
+
+    const page = parseInt(req.query.page) || 1; // Current page number, defaults to 1
+    const limit = parseInt(req.query.limit) || 10; // Number of results per page, defaults to 10
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const results = {};
+
+    const totalResults = await CustomerModel.countDocuments().exec(); // Count total number of documents
+    results.totalResults = totalResults;
+
+    if (endIndex < totalResults) {
+        results.next = {
+            page: page + 1,
+            limit: limit
+        };
+    }
+
+    if (startIndex > 0) {
+        results.previous = {
+            page: page - 1,
+            limit: limit
+        };
+    }
+
+    results.customers = await CustomerModel.find().limit(limit).skip(startIndex).exec(); // Find documents with pagination
+    res.send(results)
 })
 
 app.get('/api/customer/:id', async (req, res) => {
@@ -54,7 +80,7 @@ app.post('/api/customer', async (req, res) => {
     //     const first_name = faker.name.firstName();
     //     const last_name = faker.name.lastName();
     //     const email = faker.internet.email(first_name, last_name);
-        
+
     //     customers.push({first_name, last_name, email})
     // }
 
@@ -67,8 +93,14 @@ app.post('/api/customer', async (req, res) => {
 
 // coupons apis
 
+
+app.get('/api/coupon', async (req, res) => {
+    let coupons = await CouponModel.find()
+    res.send(coupons)
+})
+
 app.post('/api/coupon', async (req, res) => {
-    
+
     const {
         name,
         code,
@@ -79,9 +111,9 @@ app.post('/api/coupon', async (req, res) => {
         terms
     } = req.body
 
-    const existingCoupon = await CouponModel.findOne({code: code})
+    const existingCoupon = await CouponModel.findOne({ code: code })
 
-    if(existingCoupon) {
+    if (existingCoupon) {
         return res.send({
             error: true,
             message: "Coupon code already exists"
@@ -101,6 +133,29 @@ app.post('/api/coupon', async (req, res) => {
     let result = await coupon.save()
 
     res.send(result)
+})
+
+
+
+app.post('/api/apply_coupon', async (req, res) => {
+
+    let {
+        item_id,
+        quantity,
+        coupon_code,
+        customer_id
+    } = req.body
+
+    // logic to check if coupon is applicable
+    // Also check how much discount is applicable
+    
+
+    res.send({
+        message: "Coupon Applied Successfully",
+        amount_off: 100,
+        amount_to_pay: 900
+    })
+
 })
 
 
