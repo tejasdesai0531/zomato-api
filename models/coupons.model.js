@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
-const customerSchema = new mongoose.Schema({
+const couponSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
   code: {
     type: String,
     required: true
@@ -9,16 +13,24 @@ const customerSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  discount: {
+  discount_in_percent: {
     type: Number,
     required: true
   },
   maximum_discout: {
     type: Number,
     required: true
+  },
+  marketing_text: {
+    type: String,
+    required: true
+  },
+  terms: {
+    type: String,
+    required: true
   }
 });
 
-const Customer = mongoose.model('Customer', customerSchema);
+const Coupon = mongoose.model('Coupon', couponSchema);
 
-module.exports = Customer;
+module.exports = Coupon;
