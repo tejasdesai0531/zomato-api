@@ -106,6 +106,8 @@ app.post('/api/coupon', async (req, res) => {
         code,
         minimum_transaction_amount,
         discount_in_percent,
+        coupon_Type,
+        flat_amount_Of,
         maximum_discout,
         marketing_text,
         terms
@@ -125,6 +127,8 @@ app.post('/api/coupon', async (req, res) => {
         code,
         minimum_transaction_amount,
         discount_in_percent,
+        coupon_Type,
+        flat_amount_Of,
         maximum_discout,
         marketing_text,
         terms
@@ -148,15 +152,52 @@ app.post('/api/apply_coupon', async (req, res) => {
 
     // logic to check if coupon is applicable
     // Also check how much discount is applicable
+
+    let findItem = await ItemModel.findById({_id: item_id})
+
+        let price = findItem.price
+        let totalAmount = price * quantity
+        
+
+    let coupon = await CouponModel.findOne({code: coupon_code})
+    console.log(coupon)
+
+    let minimumTransactionAmount = coupon.minimum_transaction_amount
+    let discountInPercent = coupon.discount_in_percent
+    let maximumDiscount = coupon.maximum_discout
+
+    console.log(maximumDiscount,discountInPercent)
+    // let flat_amount_Of = coupon.flat_amount_Of
+
+    // "minimum_transaction_amount" 500,
+    // "discount_in_percent": 50,
+    // "maximum_discount": 200,
+    // "marketing_text": "Get 50% of upto 200",
     
+    if(totalAmount < minimumTransactionAmount) {
+      return res.send({
+            message: "Minimum Transaction Amount should be 500",
+        })
+    }
+      
+   let calculatedDiscount = (discountInPercent * totalAmount) / 100
 
-    res.send({
+   let finalDiscount = 0
+
+   if (calculatedDiscount > maximumDiscount) {
+        finalDiscount = maximumDiscount
+   }
+   else {
+        finalDiscount = calculatedDiscount
+   }
+      
+   let finalTotalAmount = totalAmount - finalDiscount
+
+    return res.send({
         message: "Coupon Applied Successfully",
-        amount_off: 100,
-        amount_to_pay: 900
+        amount_off: finalDiscount,
+        amount_to_pay: finalTotalAmount 
     })
-
 })
-
 
 module.exports = app;

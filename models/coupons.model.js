@@ -17,7 +17,15 @@ const couponSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  maximum_discout: {
+  // coupon_Type:{
+  //   type: String,
+  //   required: true
+  // },
+  // flat_amount_Of:{
+  //   type: Number,
+  //   required: true
+  // },
+  maximum_discout:{
     type: Number,
     required: true
   },
