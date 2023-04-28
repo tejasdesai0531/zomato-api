@@ -113,7 +113,7 @@ app.post('/api/coupon', async (req, res) => {
         terms
     } = req.body
 
-    const existingCoupon = await CouponModel.find({ code: code })
+    const existingCoupon = await CouponModel.findOne({ code: code })
 
     if (existingCoupon) {
         return res.send({
@@ -178,38 +178,27 @@ app.post('/api/apply_coupon', async (req, res) => {
     
     if(totalAmount < minimumTransactionAmount) {
       return res.send({
-            message: "Minimum Transaction Amount should be 500",
+            message: `Minimum Transaction Amount should be ${minimumTransactionAmount}`,
         })
     }
       
-   let calculatedInPercentDiscount = (discountInPercent * totalAmount) / 100
    
-
    let finalDiscount = 0
+   let  finalTotalAmount = 0
 
-
-   if (coupon.coupon_Type === "Percentage" && calculatedInPercentDiscount > maximumDiscount) {
-        finalDiscount = maximumDiscount
-        
+   if (coupon.coupon_Type === "Percentage") {
+        let calculatedInPercentDiscount = (discountInPercent * totalAmount) / 100
+        if(calculatedInPercentDiscount > maximumDiscount) {
+            finalDiscount = maximumDiscount
+        } else {
+            finalDiscount = calculatedInPercentDiscount
+        }    
+   } else if(coupon.coupon_Type === "Flat") {
+        finalDiscount = flatAmount     
    }
-   else {
-        finalDiscount = calculatedInPercentDiscount
-        
-   }
-      
+    finalTotalAmount = totalAmount - finalDiscount
 
-   if(coupon.coupon_Type === "Flat" && flatAmount > maximumDiscount ) {
-      finalDiscount = maximumDiscount
-      
-
-   } else {
-      finalDiscount = flatAmount
-     
-   }
-
-    let  finalTotalAmount = totalAmount - finalDiscount
-
-   
+ 
     return res.send({
         message: "Coupon Applied Successfully",
         amount_off: finalDiscount,
