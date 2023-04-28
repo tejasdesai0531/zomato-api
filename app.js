@@ -5,7 +5,8 @@ const { faker } = require('@faker-js/faker');
 
 const ItemModel = require('./models/item.model')
 const CouponModel = require('./models/coupons.model')
-const CustomerModel = require('./models/customers.model')
+const CustomerModel = require('./models/customers.model');
+const RestaurantModel = require('./models/restaurant.model');
 
 app.use(cors())
 app.use(express.json())
@@ -180,8 +181,7 @@ app.post('/api/apply_coupon', async (req, res) => {
       return res.send({
             message: `Minimum Transaction Amount should be ${minimumTransactionAmount}`,
         })
-    }
-      
+    }    
    
    let finalDiscount = 0
    let  finalTotalAmount = 0
@@ -205,5 +205,39 @@ app.post('/api/apply_coupon', async (req, res) => {
         amount_to_pay: finalTotalAmount 
     })
 })
+
+//* restaurant apis
+
+app.get('/api/restaurant', async (req, res) => {
+    const restaurant = await RestaurantModel.find()
+    res.send(restaurant)
+})
+
+app.get('/api/restaurant/:id', async (req, res) => {
+    let id = req.params.id
+    const restaurant = await RestaurantModel.findById(id)
+    res.send(restaurant)
+})
+
+app.post('/api/restaurant', async (req, res) => {
+
+    const { name, location:{type,coordinates}} = req.body
+
+    const existingRestaurant = await RestaurantModel.findOne({name : name })
+
+    if (existingRestaurant) {
+        return res.send({
+            error: true,
+            message: "Restaurant already exists"
+        })
+    }
+
+    let restaurant = new RestaurantModel({ name, location:{type,coordinates}})
+        
+    let result = await restaurant.save()
+
+    res.send(result)
+})
+
 
 module.exports = app;
