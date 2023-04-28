@@ -105,15 +105,15 @@ app.post('/api/coupon', async (req, res) => {
         name,
         code,
         minimum_transaction_amount,
-        discount_in_percent,
         coupon_Type,
+        discount_in_percent,
         flat_amount_Of,
         maximum_discout,
         marketing_text,
         terms
     } = req.body
 
-    const existingCoupon = await CouponModel.findOne({ code: code })
+    const existingCoupon = await CouponModel.find({ code: code })
 
     if (existingCoupon) {
         return res.send({
@@ -165,8 +165,10 @@ app.post('/api/apply_coupon', async (req, res) => {
     let minimumTransactionAmount = coupon.minimum_transaction_amount
     let discountInPercent = coupon.discount_in_percent
     let maximumDiscount = coupon.maximum_discout
+    let flatAmount = coupon.flat_amount_Of
+    
 
-    console.log(maximumDiscount,discountInPercent)
+    console.log(maximumDiscount,discountInPercent,flatAmount)
     // let flat_amount_Of = coupon.flat_amount_Of
 
     // "minimum_transaction_amount" 500,
@@ -180,19 +182,34 @@ app.post('/api/apply_coupon', async (req, res) => {
         })
     }
       
-   let calculatedDiscount = (discountInPercent * totalAmount) / 100
+   let calculatedInPercentDiscount = (discountInPercent * totalAmount) / 100
+   
 
    let finalDiscount = 0
 
-   if (calculatedDiscount > maximumDiscount) {
+
+   if (coupon.coupon_Type === "Percentage" && calculatedInPercentDiscount > maximumDiscount) {
         finalDiscount = maximumDiscount
+        
    }
    else {
-        finalDiscount = calculatedDiscount
+        finalDiscount = calculatedInPercentDiscount
+        
    }
       
-   let finalTotalAmount = totalAmount - finalDiscount
 
+   if(coupon.coupon_Type === "Flat" && flatAmount > maximumDiscount ) {
+      finalDiscount = maximumDiscount
+      
+
+   } else {
+      finalDiscount = flatAmount
+     
+   }
+
+    let  finalTotalAmount = totalAmount - finalDiscount
+
+   
     return res.send({
         message: "Coupon Applied Successfully",
         amount_off: finalDiscount,

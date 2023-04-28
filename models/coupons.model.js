@@ -13,18 +13,18 @@ const couponSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  coupon_Type:{
+    type: String,
+    required: true
+  },
   discount_in_percent: {
     type: Number,
     required: true
   },
-  // coupon_Type:{
-  //   type: String,
-  //   required: true
-  // },
-  // flat_amount_Of:{
-  //   type: Number,
-  //   required: true
-  // },
+  flat_amount_Of:{
+    type: Number,
+    required: true
+  },
   maximum_discout:{
     type: Number,
     required: true
