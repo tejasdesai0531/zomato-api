@@ -7,6 +7,7 @@ const ItemModel = require('./models/item.model')
 const CouponModel = require('./models/coupons.model')
 const CustomerModel = require('./models/customers.model');
 const RestaurantModel = require('./models/restaurant.model');
+const CatalogueModel = require('./models/catalogue.model')
 
 app.use(cors())
 app.use(express.json())
@@ -221,7 +222,8 @@ app.get('/api/restaurant/:id', async (req, res) => {
 
 app.post('/api/restaurant', async (req, res) => {
 
-    const { name, location:{type,coordinates}} = req.body
+    // const { name, location:{type,coordinates}} = req.body
+    const { name, latitude, longitude } = req.body
 
     const existingRestaurant = await RestaurantModel.findOne({name : name })
 
@@ -232,12 +234,49 @@ app.post('/api/restaurant', async (req, res) => {
         })
     }
 
-    let restaurant = new RestaurantModel({ name, location:{type,coordinates}})
+
+    const location = {
+        type: 'Point',
+        coordinates: [latitude, longitude]
+    }
+
+    let restaurant = new RestaurantModel({ name, location})
         
     let result = await restaurant.save()
 
     res.send(result)
 })
+
+app.post('/api/restaurant/category', async (req, res) => {
+    const { name, restaurant_id } = req.body
+
+    let catalouge = await CatalogueModel.findOne({restaurant_id: restaurant_id})
+
+    if(!catalouge) {
+        catalouge = new CatalogueModel({
+            restaurant_id: restaurant_id,
+            categories: []
+        })
+    }
+
+    catalouge.categories.push({
+        name: name,
+        items: []
+    })
+
+    await catalouge.save()
+
+    res.send({
+        message: "category added successfully",
+        catalouge
+    })
+})
+
+app.post('/api/restaurant/category/item', async (req, res) => {
+
+    const { name, price, restaurant_id, category_id } = req.body
+
+}) 
 
 
 module.exports = app;
