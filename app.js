@@ -6,11 +6,29 @@ const { faker } = require('@faker-js/faker');
 const ItemModel = require('./models/item.model')
 const CouponModel = require('./models/coupons.model')
 const CustomerModel = require('./models/customers.model');
-const RestaurantModel = require('./models/restaurant.model');
-const CatalogueModel = require('./models/catalogue.model')
+const RestaurantModel = require('./models/restaurant.model')
+const FCMModel = require('./models/fcm.model')
 
 app.use(cors())
 app.use(express.json())
+
+app.get('/api/fcm', async (req, res) => {
+    let fmcs = await FCMModel.find()
+
+    res.send(fmcs)
+})
+
+app.post('/api/fcm', async (req, res) => {
+    console.log(req.body)
+
+    let fcm = new FCMModel({token: req.body.token})
+
+    await fcm.save()
+
+    res.send({
+        message:"Got the token"
+    })
+})
 
 // item routes
 
