@@ -13,6 +13,13 @@ const couponSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  item_id:[{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Item"
+  }],
+  is_item_specific:{
+    type: Boolean
+  },
   coupon_Type:{
     type: String,
     enum: ['Percentage', 'Flat'],

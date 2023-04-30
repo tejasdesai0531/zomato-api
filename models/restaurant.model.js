@@ -15,7 +15,7 @@ const restauranSchema = new mongoose.Schema({
             type: [Number],
             required: true
         }
-    }
+    } 
 })
 
 const Restaurant = mongoose.model('Restaurant', restauranSchema)

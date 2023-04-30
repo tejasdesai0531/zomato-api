@@ -10,12 +10,8 @@ const catalogueSchema = new mongoose.Schema({
             type: String
         },
         items: [{
-            name: {
-                type: String
-            },
-            price: {
-                type: Number
-            }
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Item'
         }]
     }]
 })

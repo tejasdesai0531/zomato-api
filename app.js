@@ -107,6 +107,8 @@ app.post('/api/coupon', async (req, res) => {
         name,
         code,
         minimum_transaction_amount,
+        item_id,
+        is_item_specific,
         coupon_Type,
         discount_in_percent,
         flat_amount_Of,
@@ -128,6 +130,8 @@ app.post('/api/coupon', async (req, res) => {
         name,
         code,
         minimum_transaction_amount,
+        item_id,
+        is_item_specific,
         discount_in_percent,
         coupon_Type,
         flat_amount_Of,
@@ -155,19 +159,30 @@ app.post('/api/apply_coupon', async (req, res) => {
     // logic to check if coupon is applicable
     // Also check how much discount is applicable
 
-    let findItem = await ItemModel.findById({_id: item_id})
+    let findItem = await ItemModel.findById({'_id': item_id})
 
         let price = findItem.price
         let totalAmount = price * quantity
-        
 
     let coupon = await CouponModel.findOne({code: coupon_code})
     console.log(coupon)
 
+    let isItemSpecific = coupon.is_item_specific
+    let itemId = coupon.item_id
     let minimumTransactionAmount = coupon.minimum_transaction_amount
     let discountInPercent = coupon.discount_in_percent
     let maximumDiscount = coupon.maximum_discout
     let flatAmount = coupon.flat_amount_Of
+
+   let itemFound = itemId.find((id) => {
+       return id.toString() === item_id
+    })
+
+    if(!itemFound) {
+        return res.send({
+            message: " this coupon not applicable"
+        })
+    }
     
 
     console.log(maximumDiscount,discountInPercent,flatAmount)
@@ -177,6 +192,14 @@ app.post('/api/apply_coupon', async (req, res) => {
     // "discount_in_percent": 50,
     // "maximum_discount": 200,
     // "marketing_text": "Get 50% of upto 200",
+
+    // if(isItemSpecific) { 
+    //     if( itemId.toString() !== item_id){ 
+    //         return res.send({
+    //             message:"coupon is not applicable for this item"
+    //         })
+    //     }
+    // }
     
     if(totalAmount < minimumTransactionAmount) {
       return res.send({
@@ -237,7 +260,7 @@ app.post('/api/restaurant', async (req, res) => {
 
     const location = {
         type: 'Point',
-        coordinates: [latitude, longitude]
+        coordinates: [longitude, latitude]
     }
 
     let restaurant = new RestaurantModel({ name, location})
@@ -246,6 +269,8 @@ app.post('/api/restaurant', async (req, res) => {
 
     res.send(result)
 })
+
+//* Category APIs
 
 app.post('/api/restaurant/category', async (req, res) => {
     const { name, restaurant_id } = req.body
@@ -272,11 +297,42 @@ app.post('/api/restaurant/category', async (req, res) => {
     })
 })
 
+
+//* Item APIs
+
 app.post('/api/restaurant/category/item', async (req, res) => {
 
-    const { name, price, restaurant_id, category_id } = req.body
+    // get the request body
+  const {restaurant_id, category_id, item_name, item_price} = req.body;
+  
 
-}) 
+    const item = {
+         name: item_name,
+         price: item_price
+    }
+
+    let newItem = new ItemModel(item) 
+    let itemResult= await newItem.save()
+
+    const catalogue = await CatalogueModel.findOne({restaurant_id})
+
+    const category = catalogue.categories.find(category =>  category._id.toString() === category_id)
+    if(!category.items){
+        category.items = []
+    }
+    category.items.push(itemResult._id)
+
+    await catalogue.save()
+// find and update the catalogue document by restaurant_id and category_name
+//   using the $push operator to append the item to the items array
+
+//   const result = await CatalogueModel.findOneAndUpdate({restaurant_id:restaurant_id, 'categories._id': category_id},
+    // {$push: {'categories.$.items': item}});
+    
+    // let categoriesItem = await result.save()
+
+    res.send(catalogue)
+})
 
 
 module.exports = app;
